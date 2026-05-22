@@ -3,7 +3,7 @@
 # importación de la data
 from data_inventario import inventario
 
-# --- MÓDULO: Calcular cantidad a pedir ---
+#* --- Funcion Calcular cantidad a pedir validando si el stock es menor al mínimo ---
 def calcular_pedido(stock_actual, stock_minimo):
     if stock_actual < stock_minimo:
         return stock_minimo - stock_actual
@@ -12,13 +12,13 @@ def calcular_pedido(stock_actual, stock_minimo):
  
 # --- LÓGICA PRINCIPAL ---
 def auditar_inventario(inventario):
+    
+    # creamos un arreglo para ingresar los pedidos que se necesitan hacer para reabastecer el inventario
     pedidos = []
  
+    # Entramos a consultar cada uno de los articulos 
     for articulo in inventario:
-        cantidad_pedido = calcular_pedido(
-            articulo["stock_actual"],
-            articulo["stock_minimo"]
-        )
+        cantidad_pedido = calcular_pedido(articulo["stock_actual"],articulo["stock_minimo"])
  
         if cantidad_pedido > 0:
             pedidos.append({
@@ -41,7 +41,7 @@ def imprimir_reporte(pedidos):
     print(separador)
  
     if not pedidos:
-        print("Todo el inventario está en niveles óptimos.")
+        print("  Todo el inventario está en niveles óptimos.")
     else:
         print(f"  {'Código':<8} {'Artículo':<25} {'Actual':>6} {'Mínimo':>7} {'Pedir':>6}")
         print("-" * 58)
