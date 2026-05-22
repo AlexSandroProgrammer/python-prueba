@@ -32,12 +32,12 @@ def auditar_inventario(inventario):
     return pedidos
  
  
-# --- SALIDA ---
+#* --- Funcion para imprimir el reporte ---
 def imprimir_reporte(pedidos):
     separador = "=" * 58
  
     print(separador)
-    print("       REPORTE DE REABASTECIMIENTO DE INVENTARIO")
+    print("REPORTE DE REABASTECIMIENTO DE INVENTARIO")
     print(separador)
  
     if not pedidos:
@@ -53,7 +53,7 @@ def imprimir_reporte(pedidos):
     print(separador)
  
  
-# --- PUNTO DE ENTRADA ---
+# --- Funcion index que se ejecuta mediante la linea de comandos ---
 if __name__ == "__main__":
     pedidos = auditar_inventario(inventario)
     imprimir_reporte(pedidos)
