@@ -1,59 +1,67 @@
-# MATRIZ DE DE AUDITORIA DE INVENTARIO
+# ============================================================
+#  AUDITORÍA DE HORAS SEMANALES - Control de Jornada Laboral
+# ============================================================
 
-# importación de la data
-from data_inventario import inventario
+from horas_data import equipo, UMBRAL_HORAS, DIAS
 
-#* --- Funcion Calcular cantidad a pedir validando si el stock es menor al mínimo ---
-def calcular_pedido(stock_actual, stock_minimo):
-    if stock_actual < stock_minimo:
-        return stock_minimo - stock_actual
-    return 0
- 
- 
-# --- LÓGICA PRINCIPAL ---
-def auditar_inventario(inventario):
+# --- Funcion para analizar al recurso o empleado ---
+def analizar_recurso(recurso, umbral):
     
-    # creamos un arreglo para ingresar los pedidos que se necesitan hacer para reabastecer el inventario
-    pedidos = []
- 
-    # Entramos a consultar cada uno de los articulos 
-    for articulo in inventario:
-        cantidad_pedido = calcular_pedido(articulo["stock_actual"],articulo["stock_minimo"])
- 
-        if cantidad_pedido > 0:
-            pedidos.append({
-                "codigo":       articulo["codigo"],
-                "nombre":       articulo["nombre"],
-                "stock_actual": articulo["stock_actual"],
-                "stock_minimo": articulo["stock_minimo"],
-                "cantidad":     cantidad_pedido,
-            })
- 
-    return pedidos
- 
- 
-#* --- Funcion para imprimir el reporte ---
-def imprimir_reporte(pedidos):
-    separador = "=" * 58
- 
-    print(separador)
-    print("REPORTE DE REABASTECIMIENTO DE INVENTARIO")
-    print(separador)
- 
-    if not pedidos:
-        print("  Todo el inventario está en niveles óptimos.")
-    else:
-        print(f"  {'Código':<8} {'Artículo':<25} {'Actual':>6} {'Mínimo':>7} {'Pedir':>6}")
-        print("-" * 58)
-        for p in pedidos:
-            print(f"  {p['codigo']:<8} {p['nombre']:<25} {p['stock_actual']:>6} {p['stock_minimo']:>7} {p['cantidad']:>6}")
-        print("-" * 58)
-        print(f"  Total de artículos a reabastecer: {len(pedidos)}")
- 
-    print(separador)
- 
- 
-# --- Funcion index que se ejecuta mediante la linea de comandos ---
+    # calculo total de horas trabajadas por el recurso
+    total = sum(recurso[dia] for dia in DIAS)
+    
+    #  determinar si el recurso está en sobretiempo o no
+    clasificacion = "Sobretiempo" if total > umbral else "Horario Estándar"
+    return total, clasificacion
+
+
+# --- funcion para auditar al equipo completo ---
+def auditar_equipo(equipo, umbral):
+    
+    # creamos el espacio para almacenar el reporte de cada recurso
+    reporte = []
+
+    for recurso in equipo:
+        total, clasificacion = analizar_recurso(recurso, umbral)
+        reporte.append({
+            "nombre":        recurso["nombre"],
+            "horas_por_dia": {dia: recurso[dia] for dia in DIAS},
+            "total":         total,
+            "clasificacion": clasificacion,
+        })
+    return reporte
+
+
+# --- Funcion que ejecutara  ---
+def imprimir_reporte(reporte, umbral):
+    """Imprime el reporte de jornada laboral por recurso."""
+    sep = "=" * 68
+
+    print(sep)
+    print("          REPORTE DE HORAS SEMANALES DEL EQUIPO")
+    print(f"          Umbral estándar: {umbral} horas semanales")
+    print(sep)
+    print(f"  {'Recurso':<18} {'L':>4} {'M':>4} {'X':>4} {'J':>4} {'V':>4}  {'Total':>6}  Jornada")
+    print("-" * 68)
+
+    for r in reporte:
+        d = r["horas_por_dia"]
+        marca = "⚠" if r["clasificacion"] == "Sobretiempo" else " "
+        print(
+            f"  {r['nombre']:<18}"
+            f" {d['lunes']:>4} {d['martes']:>4} {d['miercoles']:>4}"
+            f" {d['jueves']:>4} {d['viernes']:>4}"
+            f"  {r['total']:>6}  {marca} {r['clasificacion']}"
+        )
+
+    print("-" * 68)
+
+    sobretiempos = [r for r in reporte if r["clasificacion"] == "Sobretiempo"]
+    print(f"  Recursos en sobretiempo: {len(sobretiempos)} de {len(reporte)}")
+    print(sep)
+
+
+# --- PUNTO DE ENTRADA ---
 if __name__ == "__main__":
-    pedidos = auditar_inventario(inventario)
-    imprimir_reporte(pedidos)
+    reporte = auditar_equipo(equipo, UMBRAL_HORAS)
+    imprimir_reporte(reporte, UMBRAL_HORAS)
