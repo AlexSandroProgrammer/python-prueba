@@ -29,6 +29,7 @@ def auditar_equipo(equipo, umbral):
             "total":         total,
             "clasificacion": clasificacion,
         })
+        
     return reporte
 
 
